@@ -1,7 +1,8 @@
 'use strict';
 
-const POINT_COUNT = 10,
-    POINT_SPEED = 5;
+const POINT_COUNT = 50,
+    POINT_SPEED = 2,
+    LINE_MIN_DISTANCE = 150;
 
 const canvas = document.querySelector('canvas'),
     context = canvas.getContext('2d'),
@@ -18,8 +19,8 @@ canvas.height = window.innerHeight;
 
 for (let i = 0; i < POINT_COUNT; i++) {
     const point = {
-        x: 100,
-        y: 100,
+        x: getRandom(0, canvas.width),
+        y: getRandom(0, canvas.height),
         angle: getRandom(0, 2 * Math.PI)
     }
     points.push(point);
@@ -32,6 +33,7 @@ function tick() {
     drawBackground();
     movePoints();
     drawPoints();
+    drawLines();
     requestAnimationFrame(tick);
 }
 
@@ -82,6 +84,29 @@ function movePoints() {
             point.y = canvas.height - point.y;
         }
     }
+}
+
+function drawLines() {
+    for (let i = 0; i < POINT_COUNT - 1; i++) {
+        for (let j = i + 1; j < POINT_COUNT; j++) {
+            const pointA = points[i],
+                pointB = points[j],
+                dist = getDistance(pointA, pointB);
+
+            if (dist <= LINE_MIN_DISTANCE) {
+                context.beginPath();
+                context.strokeStyle = '#fff';
+                context.lineWidth = (1 - dist / LINE_MIN_DISTANCE) ** 0.8;
+                context.moveTo(pointA.x, pointA.y);
+                context.lineTo(pointB.x, pointB.y);
+                context.stroke();
+            }
+        }
+    }
+}
+
+function getDistance(a, b) {
+    return Math.sqrt((a.x - b.x) ** 2 + ((a.y - b.y) ** 2));
 }
 
 function getRandom(min, max) {
